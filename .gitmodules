@@ -1,0 +1,6 @@
+[submodule "ros_jazzy_ws/src/turtlebot3"]
+	path = ros_jazzy_ws/src/turtlebot3
+	url = https://github.com/ROBOTIS-GIT/turtlebot3.git
+[submodule "ros_jazzy_ws/src/turtlebot3_simulations"]
+	path = ros_jazzy_ws/src/turtlebot3_simulations
+	url = https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git
