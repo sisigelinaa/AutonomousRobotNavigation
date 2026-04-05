@@ -1,0 +1,8 @@
+scenario_runner:
+  ros__parameters:
+    # tb3_world goals (square around origin):
+    # goal_positions: [1.0, 0.0, 1.0, -1.0, 0.0, -1.0, 0.0, 0.0]
+    # t3_house goals:
+    goal_positions: [6.367633819580078, 1.5474462509155273, 1.158562421798706, 2.318802833557129, -3.5313382148742676, 0.8191921710968018,-0.028192520141601562, 2.997647285461426]
+    goal_timeout: 90.0
+    startup_delay: 8.0

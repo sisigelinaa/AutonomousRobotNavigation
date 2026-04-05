@@ -1,0 +1,14 @@
+image: tb3_house.pgm
+resolution: 0.050000
+origin: [-10.000000, -10.000000, 0.000000]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
+
+# image: t3_house.pgm
+# mode: trinary
+# resolution: 0.050
+# origin: [-5.349, -5.098, 0]
+# negate: 0
+# occupied_thresh: 0.65
+# free_thresh: 0.196

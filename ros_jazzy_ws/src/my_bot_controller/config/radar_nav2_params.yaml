@@ -1,0 +1,180 @@
+amcl:
+  ros__parameters:
+    use_sim_time: True
+    robot_model_type: "nav2_amcl::DifferentialMotionModel"
+    base_frame_id: "base_link"
+    odom_frame_id: "odom"
+    global_frame_id: "map"
+    scan_topic: "/radar_scan"
+    set_initial_pose: true
+    # initial_pose: [0.0, 0.0, 0.0]
+    initial_pose: [-2.0, -0.5, 0.0]
+
+bt_navigator:
+  ros__parameters:
+    use_sim_time: True
+    global_frame: map
+    robot_base_frame: base_link
+    odom_frame: odom
+    default_bt_xml_filename: "navigate_w_replanning_and_recovery.xml"
+    plugin_lib_names:
+      - nav2_compute_path_to_pose_action_bt_node
+      - nav2_follow_path_action_bt_node
+      - nav2_wait_action_bt_node
+      - nav2_back_up_action_bt_node
+
+controller_server:
+  ros__parameters:
+    use_sim_time: True
+    use_realtime_priority: false
+    use_stamped_vel: false
+    controller_frequency: 20.0
+    min_x_velocity_threshold: 0.001
+    min_y_velocity_threshold: 0.001
+    min_theta_velocity_threshold: 0.001
+    failure_tolerance: 0.3
+    progress_checker_plugin: "progress_checker"
+    goal_checker_plugins: ["general_goal_checker"]
+    controller_plugins: ["FollowPath"]
+    progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker"
+      required_movement_radius: 0.5
+      movement_time_allowance: 10.0
+    general_goal_checker:
+      stateful: True
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 0.25
+      yaw_goal_tolerance: 0.25
+    FollowPath:
+      plugin: "nav2_rotation_shim_controller::RotationShimController"
+      primary_controller: "dwb_core::DWBLocalPlanner"
+      angular_dist_threshold: 0.785
+      forward_sampling_distance: 0.5
+      rotate_to_heading_angular_vel: 1.8
+      max_angular_accel: 3.2
+      critics:
+        - GoalDist
+        - PathDist
+      GoalDist.scale: 24.0
+      PathDist.scale: 32.0
+
+planner_server:
+  ros__parameters:
+    expected_planner_frequency: 20.0
+    use_sim_time: True
+    planner_plugins: ["GridBased"]
+    GridBased:
+      plugin: "nav2_navfn_planner::NavfnPlanner"
+      tolerance: 0.5
+      use_astar: false
+      allow_unknown: true
+
+global_costmap:
+  ros__parameters:
+    update_frequency: 1.0
+    publish_frequency: 1.0
+    global_frame: map
+    robot_base_frame: base_link
+    use_sim_time: True
+    robot_radius: 0.22
+    resolution: 0.05
+    plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+    static_layer:
+      plugin: "nav2_costmap_2d::StaticLayer"
+      map_subscribe_transient_local: True
+    obstacle_layer:
+      plugin: "nav2_costmap_2d::ObstacleLayer"
+      enabled: True
+      observation_sources: ["radar_scan"]
+      radar_scan:
+        topic: /radar_scan
+        max_obstacle_height: 2.0
+        clearing: True
+        marking: True
+        data_type: "LaserScan"
+    inflation_layer:
+      plugin: "nav2_costmap_2d::InflationLayer"
+      cost_scaling_factor: 3.0
+      inflation_radius: 0.55
+
+local_costmap:
+  ros__parameters:
+    update_frequency: 5.0
+    publish_frequency: 2.0
+    global_frame: odom
+    robot_base_frame: base_link
+    use_sim_time: True
+    rolling_window: true
+    width: 3
+    height: 3
+    resolution: 0.05
+    robot_radius: 0.22
+    plugins: ["voxel_layer", "inflation_layer"]
+    voxel_layer:
+      plugin: "nav2_costmap_2d::VoxelLayer"
+      enabled: True
+      publish_voxel_map: True
+      origin_z: 0.0
+      z_resolution: 0.05
+      z_voxels: 16
+      max_obstacle_height: 2.0
+      mark_threshold: 0
+      observation_sources: ["radar_scan"]
+      radar_scan:
+        topic: /radar_scan
+        max_obstacle_height: 2.0
+        clearing: True
+        marking: True
+        data_type: "LaserScan"
+    inflation_layer:
+      plugin: "nav2_costmap_2d::InflationLayer"
+      cost_scaling_factor: 3.0
+      inflation_radius: 0.55
+
+slam_toolbox:
+  ros__parameters:
+    use_sim_time: True
+    solver_plugin: solver_plugins::CeresSolver
+    ceres_linear_solver: SPARSE_NORMAL_CHOLESKY
+    ceres_preconditioner: SCHUR_JACOBI
+    ceres_trust_strategy: LEVENBERG_MARQUARDT
+    ceres_dogleg_type: TRADITIONAL_DOGLEG
+    ceres_loss_function_type: "None"
+    odom_frame: odom
+    map_frame: map
+    base_frame: base_link
+    scan_topic: /radar_scan
+    mode: localization
+    #CHANGE THIS FILE NAME TO CHANGE MAP
+    map_file_name: /home/ros/ros_ws/src/my_bot_controller/maps/t3_house
+    map_start_pose: [0.0, 0.0, 0.0]
+    map_update_interval: 2.0
+    resolution: 0.05
+    max_laser_range: 20.0
+    minimum_time_interval: 0.5
+    transform_timeout: 0.2
+    tf_buffer_duration: 30.
+    stack_size_to_use: 40000000
+
+collision_monitor:
+  ros__parameters:
+    use_sim_time: True
+    base_frame_id: "base_link"
+    odom_frame_id: "odom"
+    transform_tolerance: 0.2
+    source_timeout: 5.0
+    base_shift_correction: True
+    observation_sources: ["radar_scan"]
+    radar_scan:
+      type: "scan"
+      topic: "/radar_scan"
+    polygons: ["slowdown_polygon", "stop_polygon"]
+    slowdown_polygon:
+      type: "polygon"
+      points: [0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5]
+      action_type: "slowdown"
+      slowdown_ratio: 0.5
+    stop_polygon:
+      type: "polygon"
+      points: [0.3, 0.3, 0.3, -0.3, -0.3, -0.3, -0.3, 0.3]
+      action_type: "stop"
